@@ -9,7 +9,7 @@ import pg from "pg"; // pg stands for PostgreSQL - connecting to database
 // import configuration file
 import config from "./config.js";
 
-// connect to our PostgreSQL database, db for short
+// connect to our PostgreSQL database, db for short/Pool is a constructor
 const db = new pg.Pool({
     connectionString: config.databaseUrl,
     ssl: true
@@ -87,12 +87,39 @@ async function getAnimalsByCategory(category) {
 }
 
 // 7. deleteOneAnimal(id)
+async function deleteOneAnimal(id) {
+  await db.query("DELETE FROM animals WHERE id = $1", [id]);
+}
+
 
 // 8. addOneAnimal(name, category, can_fly, lives_in)
+async function addOneAnimal(name, category, can_fly, lives_in) {
+  await db.query(
+    "INSERT INTO animals (name, category, can_fly, lives_in) VALUES ($1, $2, $3, $4)",
+    [name, category, can_fly, lives_in],
+  );
+}
+
 
 // 9. updateOneAnimalName(id, newName)
 
+//$1 finds the animal
+//$2 gives it the new name
+
+async function updateOneAnimalName(id, newName) {
+  await db.query(
+    "UPDATE animals SET name = $2 WHERE id = $1",
+    [id, newName],
+  );
+}
+
 // 10. updateOneAnimalCategory(id, newCategory)
+async function updateOneAnimalCategory(id, newCategory) {
+  await db.query(
+    "UPDATE animals SET category = $2 WHERE id = $1",
+    [id, newCategory],
+  );
+}
 
 // 11. 🌟 BONUS CHALLENGE — addManyAnimals(animals)
 
@@ -153,11 +180,41 @@ app.get("/get-animals-by-category/:category", async (req, res) => {
 });
 
 // 7. POST /delete-one-animal/:id
+app.post("/delete-one-animal/:id", async (req, res) => {
+  await deleteOneAnimal(req.params.id);
+  res.send(`Success! Animal with id ${req.params.id} was deleted!`)
+})
+
 
 // 8. POST /add-one-animal
+app.post("/add-one-animal", async (req, res) => {
+  // get the request body
+  const { name, category, can_fly, lives_in } = req.body;
+  // helper function
+  await addOneAnimal(name, category, can_fly, lives_in);
+  // send a response
+  res.send(`Success! ${name} was added!`)
+})
+
 
 // 9. POST /update-one-animal-name
+app.post("/update-one-animal-name", async (req, res) => {
+  // get the request body
+  const { id, newName } = req.body;
+  // helper function
+  await updateOneAnimalName(id, newName);
+  // send a response
+  res.send(`Success! ${newName} was updated!`)
+})
 
 // 10. POST /update-one-animal-category
+app.post("/update-one-animal-category", async (req, res) => {
+  // get the request body
+  const { id, newCategory } = req.body;
+  // helper function
+  await updateOneAnimalCategory(id, newCategory);
+  // send a response
+  res.send(`Success! ${newCategory} was updated!`)
+})
 
 // 11. 🌟 BONUS CHALLENGE — POST /add-many-animals
