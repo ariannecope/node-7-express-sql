@@ -27,6 +27,20 @@ function App() {
     setAnimals(data);
   };
 
+  //delete one animal write it here
+const deleteOneAnimal = async (id) => {
+    // send POST request to delete the animal 
+    const response = await fetch(`api/delete-one-animal/${id}`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+
+    // fetch all animals again (re-render the page)
+    getAllAnimals();
+  }
+
   // ------------------
   // EFFECTS
   // ------------------
@@ -52,6 +66,10 @@ function App() {
               <p>Category: {animal.category}</p>
               <p>Lives in: {animal.lives_in}</p>
               <p>Can fly: {animal.can_fly ? "True ✅" : "False ❌"}</p>
+              {/* Add a button to delete one animal */}
+              <button onClick={() => deleteOneAnimal(animal.id)}>
+  Rehome Animal
+</button>
             </div>
           ))}
         </div>
